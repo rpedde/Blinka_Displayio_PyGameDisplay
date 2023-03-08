@@ -29,14 +29,30 @@ Implementation Notes
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/foamyguy/Foamyguy_CircuitPython_Blinka_Displayio_PyGameDisplay.git"
 
-import time
 import threading
+import time
 from dataclasses import astuple
+
 import displayio
 import pygame
 from PIL import Image
 
 _INIT_SEQUENCE = None
+
+
+class PyGameTouchscreen(object):
+    def __init__(self):
+        self._last_position = None
+
+    def set_pos(self, pos):
+        self._last_position = pos
+
+    @property
+    def touch_point(self):
+        value = self._last_position
+        self._last_position = None
+        return value
+
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 class PyGameDisplay(displayio.Display):
@@ -75,6 +91,8 @@ class PyGameDisplay(displayio.Display):
         self._pygame_display_thread = None
         self._pygame_display_tevent = threading.Event()
         self._pygame_display_force_update = False
+
+        self.touchscreen = PyGameTouchscreen()
 
         if (flags & pygame.FULLSCREEN) or width == 0 or height == 0:
             width, height = self._get_screen_size()
@@ -175,6 +193,8 @@ class PyGameDisplay(displayio.Display):
                     self._pygame_display_thread.join()
                     pygame.quit()
                     return True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.touchscreen.set_pos((event.pos[0], event.pos[1], 0))
         except pygame.error:
             return True
         return False
