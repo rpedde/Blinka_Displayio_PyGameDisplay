@@ -37,7 +37,7 @@ import displayio
 import pygame
 from PIL import Image
 
-_INIT_SEQUENCE = None
+_INIT_SEQUENCE = []
 
 
 class PyGameTouchscreen(object):
